@@ -1,0 +1,23 @@
+Progress 25th November;
+
+order table is done.
+
+FlightPath
+
+Take all delivery in deliveries table -> done
+
+
+Find Start position (LongLat)
+Take deliveredTo (w3w) change to LongLat
+create ArrayList<FlightPath> for Start to Finish
+Append each ArrayList<FlightPath> for each delivery
+Create geoJson file of the array as one feature
+
+createFlightpath functions - takes startPos and deliveredTo
+start -> restaraunt
+restaraunt -> landmark
+landmark -> drop-off
+
+
+
+
