@@ -13,4 +13,8 @@ public class Location {
         name = name1;
         point = lnglat;
     }
+
+    public String getName(){
+        return this.name;
+    }
 }

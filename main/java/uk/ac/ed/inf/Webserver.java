@@ -1,9 +1,15 @@
 package uk.ac.ed.inf;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
 
+import java.awt.desktop.SystemSleepEvent;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -11,6 +17,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Webserver {
         String machineID;
@@ -31,7 +38,9 @@ public class Webserver {
 
         public LongLat w3wToLongLat(String w3w){
 
+            w3w = w3w.replaceAll("^\"|\"$", "" );
             String[] split = w3w.split("\\.");
+
 
             //creates url for web server running on port number specified
             String urlRequest = String.format("http://%s:%s/words/%s/%s/%s/details.json",
@@ -56,15 +65,14 @@ public class Webserver {
             //details.json as JSON string
             String jsonString = response.body();
             System.out.println(jsonString);
+            JsonParser parser = new JsonParser();
+            JsonObject json = (JsonObject) parser.parse(jsonString);
+            JsonObject coords = (JsonObject) parser.parse( json.get("coordinates").toString() );
+            Double asLong = coords.get("lng").getAsDouble();
+            Double asLat = coords.get("lat").getAsDouble();
 
-            Type Object = new TypeToken<W3W>() {
-            }.getType();
-            W3W details = new Gson().fromJson(jsonString, Object);
 
-            LongLat point = details.coordinates.point;
-
-
-            return point;
+            return new LongLat(asLong, asLat);
         };
 
 

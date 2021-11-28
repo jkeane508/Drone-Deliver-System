@@ -18,8 +18,12 @@ public class LongLat {
      * @param p2 longitude position of drone
      */
     public LongLat(double p1, double p2) {
-        latitude = p1;
-        longitude = p2;
+        longitude = p1;
+        latitude = p2;
+    }
+    public LongLat(LongLat dummy){
+        longitude = dummy.longitude;
+        latitude = dummy.latitude;
     }
 
 
@@ -114,7 +118,7 @@ public class LongLat {
         //ensures parameter data follows convention 10 degrees
         else if (angle % 10 == 0) {
             //scenario when drone rotates in quadrant 1, uses trig to find vector components of movement
-            if (angle < 90 && angle > 0) {
+            if (angle < 90 && angle >= 0) {
                 double quadrantAngleDeg = angle;
                 List values = VectorComponents(quadrantAngleDeg);
                 this.latitude = this.latitude + (dist * ((double) values.get(0)));
@@ -123,7 +127,7 @@ public class LongLat {
             }
 
             //scenario when drone rotates in quadrant 2
-            else if (angle < 180 && angle > 90) {
+            else if (angle < 180 && angle >= 90) {
                 double quadrantAngleDeg = angle - 90;
                 List values = VectorComponents(quadrantAngleDeg);
                 this.longitude = this.longitude + (dist * (double) values.get(0));
@@ -132,7 +136,7 @@ public class LongLat {
             }
 
             //scenario when drone rotates in quadrant 3
-            else if (angle < 270 && angle > 180) {
+            else if (angle < 270 && angle >= 180) {
                 double quadrantAngleDeg = angle - 180;
                 List values = VectorComponents(quadrantAngleDeg);
                 this.longitude = this.longitude - (dist * (double) values.get(1));
@@ -141,7 +145,7 @@ public class LongLat {
             }
 
             //scenario when drone rotates in quadrant 4
-            else if (angle <= 359 && angle > 270) {
+            else if (angle <= 359 && angle >= 270) {
                 double quadrantAngleDeg = angle - 270;
                 List values = VectorComponents(quadrantAngleDeg);
                 this.longitude = this.longitude - (dist * (double) values.get(0));
@@ -160,5 +164,6 @@ public class LongLat {
         System.exit(1);
         return null;
     }
+
 }
 

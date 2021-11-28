@@ -30,7 +30,7 @@ public class Menus{
      * @return List of class Menu, data is retrieved from web server.
      */
 
-    private ArrayList<Restaurant> getMenu() {
+    public ArrayList<Restaurant> getMenu() {
 
         //creates url for web server running on port number specified
         String urlRequest = String.format("http://%s:%s/menus/menus.json", this.webserver.machineID, this.webserver.serverPort);
@@ -106,11 +106,15 @@ public class Menus{
         return cost;
     }
 
-    public Restaurant findRestaraunt(ArrayList<Item> itemList){
+    public Restaurant findRestaurant(ArrayList<String> itemNameList){
         ArrayList<Restaurant> restaurants = getMenu();
         Restaurant target = null;
         for(Restaurant x : restaurants){
-            if (x.menu.containsAll(itemList)){
+            ArrayList<String> itemNameMenu = new ArrayList<String>();
+            for (Item xs : x.menu){
+                itemNameMenu.add(xs.item);
+            }
+            if (itemNameMenu.containsAll(itemNameList) ){
                 target = x;
             }
         }

@@ -2,8 +2,7 @@ package uk.ac.ed.inf;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -11,13 +10,16 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Buildings {
     Webserver webserver;
+    Database database;
 
-    public Buildings(Webserver webserver1) {
+    public Buildings(Webserver webserver1, Database database1) {
         webserver = webserver1;
+        database = database1;
 
     }
 
@@ -60,11 +62,23 @@ public class Buildings {
     }
 
 
-    public FeatureCollection createScene(){
+    public FeatureCollection createScene() throws SQLException {
         FeatureCollection noFly = getGSON("no-fly-zones");
         FeatureCollection landmarks = getGSON("landmarks");
+        FeatureCollection restaurants = getRestaurants();
+        FeatureCollection dropOff = getDropOff();
 
         for ( Feature x : landmarks.features()){
+            noFly.features().add(x);
+
+        }
+
+        for ( Feature x : restaurants.features()){
+            noFly.features().add(x);
+
+        }
+
+        for ( Feature x : getDropOff().features()){
             noFly.features().add(x);
 
         }
@@ -86,5 +100,56 @@ public class Buildings {
         return landmarkLocations;
     }
 
+    public ArrayList<NoFlyZone> getNoFlyZones() {
+        FeatureCollection noFlyZones = getGSON("no-fly-zones");
+        ArrayList<NoFlyZone> zones = new ArrayList<NoFlyZone>();
+        for (Feature x : noFlyZones.features()){
+            String name = x.properties().get("name").toString();
+            Polygon polygon =  Polygon.fromJson( x.geometry().toJson() );
+            NoFlyZone noFlyZone = new NoFlyZone(name, polygon);
+            zones.add(noFlyZone);
+        }
+        return zones;
+    }
+
+    public Location containsName(final ArrayList<Location> list, final String name){
+        return list.stream().filter(o -> o.getName().equals(name)).findAny().orElseThrow();
+    }
+
+    public FeatureCollection getRestaurants(){
+        Menus menu = new Menus(webserver);
+        ArrayList<Restaurant> restaurants = menu.getMenu();
+        ArrayList<Feature> feautures = new ArrayList<Feature>();
+
+        for (Restaurant x : restaurants){
+            LongLat coord = webserver.w3wToLongLat(x.location);
+            Point start = Point.fromLngLat(coord.longitude, coord.latitude);
+            Geometry g = start;
+            Feature f = Feature.fromGeometry(g);
+            f.addStringProperty("name", x.name);
+            f.addStringProperty("location", x.location);
+            f.addStringProperty("marker-symbol", "cafe");
+            f.addStringProperty("marker-color", "#ff2600");
+            feautures.add(f);
+        }
+        return FeatureCollection.fromFeatures(feautures);
+    }
+
+    public FeatureCollection getDropOff() throws SQLException {
+        ArrayList<Delivery> deliveries = database.getDeliveries();
+        ArrayList<Feature> feautures = new ArrayList<Feature>();
+        for ( Delivery x : deliveries){
+            LongLat coord = webserver.w3wToLongLat(x.deliveredTo);
+            Point start = Point.fromLngLat(coord.longitude, coord.latitude);
+            Geometry g = start;
+            Feature f = Feature.fromGeometry(g);
+            f.addStringProperty("name", x.orderNo);
+            f.addStringProperty("location", x.deliveredTo);
+            f.addStringProperty("marker-symbol", "cross");
+            f.addStringProperty("marker-color", "#00f900");
+            feautures.add(f);
+        }
+        return FeatureCollection.fromFeatures(feautures);
+    }
 
 }
