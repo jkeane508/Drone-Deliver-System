@@ -1,11 +1,6 @@
 package uk.ac.ed.inf;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.mapbox.geojson.*;
-
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -13,10 +8,18 @@ import java.net.http.HttpResponse;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+
+/**
+ * Holds methods for getting GeoJson points for map attributes
+ */
 public class Buildings {
     Webserver webserver;
     Database database;
 
+    /**
+     * @param webserver1 Webserver
+     * @param database1 Database
+     */
     public Buildings(Webserver webserver1, Database database1) {
         webserver = webserver1;
         database = database1;
@@ -46,10 +49,10 @@ public class Buildings {
         try {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException e) {
-            System.out.println("Fatal error: Unable to connect to " + webserver.machineID +" at port "+ webserver.serverPort + ".");
+            System.err.println("Fatal error: Unable to connect to " + webserver.machineID +" at port "+ webserver.serverPort + ".");
             System.exit(1); // Exit the application
         } catch (InterruptedException e) {
-            System.out.println("Fatal error: Unable to connect to " + webserver.machineID +" at port "+ webserver.serverPort + ".");
+            System.err.println("Fatal error: Unable to connect to " + webserver.machineID +" at port "+ webserver.serverPort + ".");
             System.exit(1); // Exit the application
         }
 
@@ -62,11 +65,16 @@ public class Buildings {
     }
 
 
+    /**
+     * @return GeoJson Feature Collection of all map features
+     * @throws SQLException
+     */
     public FeatureCollection createScene() throws SQLException {
         FeatureCollection noFly = getGSON("no-fly-zones");
         FeatureCollection landmarks = getGSON("landmarks");
         FeatureCollection restaurants = getRestaurants();
         FeatureCollection dropOff = getDropOff();
+        Feature start = getStart();
 
         for ( Feature x : landmarks.features()){
             noFly.features().add(x);
@@ -83,10 +91,16 @@ public class Buildings {
 
         }
 
+        noFly.features().add(start);
+
+
         return noFly;
 
     }
 
+    /**
+     * @return ArrayList of landmarks as type Location
+     */
     public ArrayList<Location> landmarksToLocations() {
         FeatureCollection landmarks = getGSON("landmarks");
         ArrayList<Location> landmarkLocations = new ArrayList<Location>();
@@ -100,6 +114,9 @@ public class Buildings {
         return landmarkLocations;
     }
 
+    /**
+     * @return Array List of No-Fly-Zones as type NoFlyZone
+     */
     public ArrayList<NoFlyZone> getNoFlyZones() {
         FeatureCollection noFlyZones = getGSON("no-fly-zones");
         ArrayList<NoFlyZone> zones = new ArrayList<NoFlyZone>();
@@ -112,10 +129,9 @@ public class Buildings {
         return zones;
     }
 
-    public Location containsName(final ArrayList<Location> list, final String name){
-        return list.stream().filter(o -> o.getName().equals(name)).findAny().orElseThrow();
-    }
-
+    /**
+     * @return GeoJson Feature Collection of Restaurants
+     */
     public FeatureCollection getRestaurants(){
         Menus menu = new Menus(webserver);
         ArrayList<Restaurant> restaurants = menu.getMenu();
@@ -135,6 +151,10 @@ public class Buildings {
         return FeatureCollection.fromFeatures(feautures);
     }
 
+    /**
+     * @return GeoJson Feature Collection of Delivery Locations
+     * @throws SQLException
+     */
     public FeatureCollection getDropOff() throws SQLException {
         ArrayList<Delivery> deliveries = database.getDeliveries();
         ArrayList<Feature> feautures = new ArrayList<Feature>();
@@ -150,6 +170,20 @@ public class Buildings {
             feautures.add(f);
         }
         return FeatureCollection.fromFeatures(feautures);
+    }
+
+    /**
+     * @return GeoJson Feature of Appleton Tower (Start Location)
+     */
+    public Feature getStart(){
+        LongLat appleton = new LongLat(-3.186874, 55.944494);
+        Point start = Point.fromLngLat(appleton.longitude, appleton.latitude);
+        Geometry g = start;
+        Feature f = Feature.fromGeometry(g);
+        f.addStringProperty("name", "appleton");
+        f.addStringProperty("marker-symbol", "building");
+        f.addStringProperty("marker-color", "#fffb00");
+        return f;
     }
 
 }

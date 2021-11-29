@@ -1,20 +1,25 @@
 package uk.ac.ed.inf;
 
 import com.mapbox.geojson.*;
-
-import java.rmi.server.RemoteStub;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Class Map holds methods for processing Json and GeoJson Objects
+ */
 public class Map {
     Database database;
     Webserver webserver;
     FeatureCollection scene;
 
+    /**
+     * @param database1 Database
+     * @param webserver1 Webserver
+     * @throws SQLException
+     */
     public Map(Database database1, Webserver webserver1) throws SQLException {
         database = database1;
         webserver = webserver1;
@@ -22,6 +27,10 @@ public class Map {
     }
 
 
+    /**
+     * @return Array List of Type Flightpath, Retrieves all Flightpaths from database
+     * @throws SQLException
+     */
     public ArrayList<Flightpath> getFlightpaths() throws SQLException {
         Connection conn = database.databaseCommunication();
 
@@ -46,6 +55,10 @@ public class Map {
     }
 
 
+    /**
+     * @param x Flightpath
+     * @return Flightpath as type Feature (LineString)
+     */
     public Feature createFeature(Flightpath x){
         Point start = Point.fromLngLat(x.fromLongitude, x.fromLatitude);
         Point end = Point.fromLngLat(x.toLongitude, x.toLatitude);
@@ -57,13 +70,15 @@ public class Map {
         return feature;
     }
 
+    /**
+     * @return JsonString of all Flightpaths as Features
+     * @throws SQLException
+     */
     public String createJsonFlightpath() throws SQLException {
         ArrayList<Flightpath> flightpaths = this.getFlightpaths();
-        System.out.println(flightpaths.size());
 
         for (Flightpath x : flightpaths){
             Feature feature = createFeature(x);
-            System.out.println(feature);
             this.scene.features().add(feature);
         }
 

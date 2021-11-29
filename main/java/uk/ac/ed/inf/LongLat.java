@@ -1,5 +1,7 @@
 package uk.ac.ed.inf;
 
+import com.mapbox.geojson.Point;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +23,10 @@ public class LongLat {
         longitude = p1;
         latitude = p2;
     }
+
+    /**
+     * @param dummy LongLat Object
+     */
     public LongLat(LongLat dummy){
         longitude = dummy.longitude;
         latitude = dummy.latitude;
@@ -33,7 +39,7 @@ public class LongLat {
      * @return true if within latitude and longitude boundaries, otherwise false
      */
     public boolean isConfined() {
-        if ((this.latitude >= -3.192473) & (this.latitude <= -3.184319) & (this.longitude >= 55.942617) & (this.longitude <= 55.946233)) {
+        if ((this.longitude >= -3.192473) & (this.longitude <= -3.184319) & (this.latitude >= 55.942617) & (this.latitude <= 55.946233)) {
             return true;
         } else {
             return false;
@@ -164,6 +170,68 @@ public class LongLat {
         System.exit(1);
         return null;
     }
+
+    /**
+     * @param end LongLat of Coordinate to calculate angle between
+     * @return integer of angle from this object and param end
+     */
+    public int angleBetweenRounded(LongLat end){
+        double latitude1 = Math.toRadians(this.latitude);
+        double latitude2 = Math.toRadians(end.latitude);
+        double longDiff= Math.toRadians(end.longitude - this.longitude);
+        double y = Math.sin(longDiff)*Math.cos(latitude2);
+        double x =Math.cos(latitude1)*Math.sin(latitude2)-Math.sin(latitude1)*Math.cos(latitude2)*Math.cos(longDiff);
+        double bearing =  (Math.toDegrees(Math.atan2(y, x))+360)%360;
+
+        /*if (bearing >= 0 && bearing < 90){
+            bearing = Math.abs(90 - bearing);
+        }
+        else if (bearing >= 90 && bearing < 180){
+            bearing = Math.abs(bearing - 90);
+            bearing = 270 + bearing;
+        }
+        else if (bearing >= 180 && bearing < 270){
+            bearing = 90 -  Math.abs(bearing - 180);
+            bearing = 180 + bearing;
+        }
+        else if (bearing >= 270 && bearing < 360){
+            bearing = 90 - Math.abs(bearing - 270);
+            bearing = 90 + bearing;
+        }
+        else{
+            System.err.println("Angle calculation error");
+            bearing = 0.0;
+        }*/
+
+
+        int roundedBearing = (int) (Math.round(bearing/10.0) * 10);
+        if (roundedBearing== 360){
+            roundedBearing = 0;
+        }
+
+        return roundedBearing;
+
+    }
+
+    /**
+     * @param zones Array List of NoFlyZones
+     * @return Boolean if this is close to any of the NoFlyZones
+     */
+    public boolean closeToPolygon(ArrayList<NoFlyZone> zones){
+        boolean bool = false;
+        for(NoFlyZone zone : zones){
+            for(List<Point> xs : zone.zone.coordinates()){
+                for (Point x : xs){
+                    LongLat comparison = new LongLat(x.longitude(), x.latitude());
+                    if (this.closeTo(comparison)){
+                        bool = true;
+                    }
+                }
+            }
+        }
+        return bool;
+    }
+
 
 }
 

@@ -1,24 +1,17 @@
 package uk.ac.ed.inf;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
-import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.FeatureCollection;
-import com.mapbox.geojson.Geometry;
-
-import java.awt.desktop.SystemSleepEvent;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.Arrays;
 
+/**
+ * Holds most methods dealign with webserver IO
+ */
 public class Webserver {
         String machineID;
         String serverPort;
@@ -36,6 +29,10 @@ public class Webserver {
         //http client is resource heavy so we only use one instance
         private static final HttpClient client = HttpClient.newHttpClient();
 
+    /**
+     * @param w3w what3words String
+     * @return Type LongLat of derived from what3word string
+     */
         public LongLat w3wToLongLat(String w3w){
 
             w3w = w3w.replaceAll("^\"|\"$", "" );
@@ -55,16 +52,15 @@ public class Webserver {
             try {
                 response = client.send(request, HttpResponse.BodyHandlers.ofString());
             } catch (IOException e) {
-                System.out.println("Fatal error: Unable to connect to " + machineID +" at port "+ serverPort + ".");
+                System.err.println("Fatal error: Unable to connect to " + machineID +" at port "+ serverPort + ".");
                 System.exit(1); // Exit the application
             } catch (InterruptedException e) {
-                System.out.println("Fatal error: Unable to connect to " + machineID +" at port "+ serverPort + ".");
+                System.err.println("Fatal error: Unable to connect to " + machineID +" at port "+ serverPort + ".");
                 System.exit(1); // Exit the application
             }
 
             //details.json as JSON string
             String jsonString = response.body();
-            System.out.println(jsonString);
             JsonParser parser = new JsonParser();
             JsonObject json = (JsonObject) parser.parse(jsonString);
             JsonObject coords = (JsonObject) parser.parse( json.get("coordinates").toString() );

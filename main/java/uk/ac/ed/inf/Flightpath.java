@@ -1,10 +1,9 @@
 package uk.ac.ed.inf;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
 
+/**
+ * Flightpath class holds type flightpath
+ */
 public class Flightpath {
     String orderNo;
     double fromLongitude;
@@ -13,6 +12,14 @@ public class Flightpath {
     double toLongitude;
     double toLatitude;
 
+    /**
+     * @param orderNo1 Order Number
+     * @param fromLongitude1 From Longitude
+     * @param fromLatitude1 From Latitude
+     * @param angle1 Bearing
+     * @param toLongitude1 To Longitude
+     * @param toLatitude1 To Latitude
+     */
     public Flightpath(
             String orderNo1,
             double fromLongitude1,

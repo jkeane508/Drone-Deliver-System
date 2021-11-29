@@ -16,13 +16,16 @@ import java.util.ArrayList;
 public class Menus{
     Webserver webserver;
 
+    /**
+     * @param webserver1 Webserver
+     */
     public Menus(Webserver webserver1) {
         webserver = webserver1;
 
     }
 
     //http client is resource heavy so we only use one instance
-    private static final HttpClient client = HttpClient.newHttpClient();
+    public static final HttpClient client = HttpClient.newHttpClient();
 
 
     /**
@@ -44,10 +47,10 @@ public class Menus{
         try {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException e) {
-            System.out.println("Fatal error: Unable to connect to " + webserver.machineID +" at port "+ webserver.serverPort + ".");
+            System.err.println("Fatal error: Unable to connect to " + webserver.machineID +" at port "+ webserver.serverPort + ".");
             System.exit(1); // Exit the application
         } catch (InterruptedException e) {
-            System.out.println("Fatal error: Unable to connect to " + webserver.machineID +" at port "+ webserver.serverPort + ".");
+            System.err.println("Fatal error: Unable to connect to " + webserver.machineID +" at port "+ webserver.serverPort + ".");
             System.exit(1); // Exit the application
         }
 
@@ -106,16 +109,23 @@ public class Menus{
         return cost;
     }
 
-    public Restaurant findRestaurant(ArrayList<String> itemNameList){
+    /**
+     * @param itemNameList List of Item Names
+     * @return Array List of Restaurants that contain Item Names
+     */
+    public ArrayList<Restaurant> findRestaurant(ArrayList<String> itemNameList){
         ArrayList<Restaurant> restaurants = getMenu();
-        Restaurant target = null;
+        ArrayList<Restaurant> target = new ArrayList<Restaurant>();
         for(Restaurant x : restaurants){
             ArrayList<String> itemNameMenu = new ArrayList<String>();
             for (Item xs : x.menu){
                 itemNameMenu.add(xs.item);
             }
-            if (itemNameMenu.containsAll(itemNameList) ){
-                target = x;
+
+            for (String y : itemNameList){
+                if(itemNameMenu.contains(y)){
+                    target.add(x);
+                }
             }
         }
         return target;

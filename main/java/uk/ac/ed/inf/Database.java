@@ -3,6 +3,9 @@ package uk.ac.ed.inf;
 import java.sql.*;
 import java.util.ArrayList;
 
+/**
+ * Class for Apache Database, Manages most IO processes for Database
+ */
 public class Database {
     String machineID;
     String serverPort;
@@ -18,6 +21,10 @@ public class Database {
 
     }
 
+    /**
+     * @return Connection for Database Server
+     * @throws SQLException
+     */
     public Connection databaseCommunication() throws SQLException {
         String jdbcString = String.format("jdbc:derby://%s:%s/derbyDB", this.machineID, this.serverPort);
         Connection conn = null;
@@ -25,8 +32,8 @@ public class Database {
         try {
             conn = DriverManager.getConnection(jdbcString);
         } catch (SQLException e) {
-            System.out.print(e);
-            System.out.println("Fatal error: Unable to connect to " + machineID + " at port " + serverPort + ".");
+            System.err.print(e);
+            System.err.println("Fatal error: Unable to connect to " + machineID + " at port " + serverPort + ".");
             System.exit(1); // Exit the application
         }
 
@@ -34,6 +41,10 @@ public class Database {
         return conn;
     }
 
+    /**
+     * Creates Deliveries Table
+     * @throws SQLException
+     */
     public void createDeliveriesTable() throws SQLException {
         Connection conn = databaseCommunication();
         Statement statement = conn.createStatement();
@@ -51,6 +62,10 @@ public class Database {
 
     }
 
+    /**
+     * Creates Flightpath Table in Database
+     * @throws SQLException
+     */
     public void createFlightpathTable() throws SQLException {
         Connection conn = databaseCommunication();
         Statement statement = conn.createStatement();
@@ -68,6 +83,10 @@ public class Database {
 
     }
 
+    /**
+     * @param x Delivery to be appended to Deliveries Table in Database
+     * @throws SQLException
+     */
     public void addDeliveryDatabase (Delivery x) throws SQLException {
         Connection conn = databaseCommunication();
 
@@ -79,6 +98,10 @@ public class Database {
         psDelivery.execute();
     }
 
+    /**
+     * @param x Flightpath Object to be appended to Flighpath Table in Database
+     * @throws SQLException
+     */
     public void addFlightpathDatabase (Flightpath x) throws SQLException {
         Connection conn = databaseCommunication();
 
@@ -93,6 +116,11 @@ public class Database {
         psFlightpath.execute();
     }
 
+    /**
+     * @param date Date of Orders to be retrieved from database
+     * @return Array List of type Order, Contains all orders for date
+     * @throws SQLException
+     */
     public ArrayList<Order> getOrdersDate(String date) throws SQLException {
         Connection conn = databaseCommunication();
         final String orderQuery = "select * from orders where deliveryDate = (?)";
@@ -115,6 +143,11 @@ public class Database {
         return orders;
     }
 
+    /**
+     * @param orderNo String Type - Order Number
+     * @return String List of Items to be delivered in order
+     * @throws SQLException
+     */
     public String[] getDeliveryItems(String orderNo) throws SQLException {
         Connection conn = databaseCommunication();
         final String orderQuery = "select * from orderDetails where orderNO = (?)";
@@ -133,6 +166,10 @@ public class Database {
         return itemList.toArray(new String[0]);
     }
 
+    /**
+     * @return Array List of Type Delivery of all Deliveries in deliveries table
+     * @throws SQLException
+     */
     public ArrayList<Delivery> getDeliveries() throws SQLException {
         Connection conn = databaseCommunication();
         final String orderQuery = "select * from deliveries";
